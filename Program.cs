@@ -3,6 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NetCoreSsrTest.Context;
+using NetCoreSsrTest.Swapi.Contracts;
+using NetCoreSsrTest.Swapi.Infrastucture;
+using NetCoreSsrTest.Swapi.Service;
 using System.Security.Claims;
 using System.Text;
 
@@ -57,6 +60,14 @@ internal class Program
 			o.AddPolicy("Regular", p => p.RequireClaim(ClaimTypes.Role, "Regular"));
 			o.AddPolicy("RegularOnly", p => p.RequireAssertion(c => c.User.HasClaim(ClaimTypes.Role, "Regular")));
 		});
+
+		builder.Services.AddHttpClient<ISwapiClient, SwapiClient>(c =>
+		{
+			c.BaseAddress = new Uri("https://www.swapi.tech/api/");
+			c.Timeout = TimeSpan.FromSeconds(20);
+		});
+
+		builder.Services.AddScoped<ISwapiSyncService, SwapiSyncService>();
 
 		var app = builder.Build();
 

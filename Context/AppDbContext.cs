@@ -11,5 +11,6 @@ public class AppDbContext : DbContext
 	protected override void OnModelCreating(ModelBuilder b)
 	{
 		b.Entity<MovieUser>().HasIndex(x => x.Email).IsUnique();
+		b.Entity<Movie>().HasIndex(x => x.ExternalUid).IsUnique();
 	}
 }
