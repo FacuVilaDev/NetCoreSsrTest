@@ -2,7 +2,7 @@
 
 public class MovieDtos
 {
-	public record MovieRequest(string Title, string? Description, int? Year);
+    public record MovieRequest(string Title, string? Description, int? Year, string? Director, string? Producer, DateTime? ReleaseDate, string? OpeningCrawl, string? ExternalUrl);
     public record MovieDetailResponse(
         int Id,
         string Title,

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using NetCoreSsrTest.Context;
 using NetCoreSsrTest.Domain;
 using static NetCoreSsrTest.Infrastructure.MovieDtos;
+using System.Text.Json;
 
 namespace NetCoreSsrTest.Controllers;
 
@@ -11,13 +12,13 @@ namespace NetCoreSsrTest.Controllers;
 [Route("movies")]
 public class MoviesController : ControllerBase
 {
-	private readonly AppDbContext _db;
+    private readonly AppDbContext _db;
 
-	public MoviesController(AppDbContext db) { _db = db; }
+    public MoviesController(AppDbContext db) { _db = db; }
 
-	[HttpGet]
-	public async Task<IEnumerable<Movie>> Get() =>
-		await _db.Movies.AsNoTracking().ToListAsync();
+    [HttpGet]
+    public async Task<IEnumerable<Movie>> Get() =>
+        await _db.Movies.AsNoTracking().ToListAsync();
 
     [HttpGet("{id:int}")]
     [Authorize(Policy = "RegularOnly")]
@@ -46,39 +47,55 @@ public class MoviesController : ControllerBase
         return dto;
     }
 
-
     [HttpPost]
-	[Authorize(Policy = "Admin")]
-	public async Task<ActionResult<Movie>> Create(MovieRequest rq)
-	{
-		if (string.IsNullOrWhiteSpace(rq.Title)) return BadRequest();
-		var m = new Movie { Title = rq.Title, Description = rq.Description, Year = rq.Year };
-		_db.Movies.Add(m);
-		await _db.SaveChangesAsync();
-		return CreatedAtAction(nameof(GetById), new { id = m.Id }, m);
-	}
+    [Authorize(Policy = "Admin")]
+    public async Task<ActionResult<Movie>> Create([FromBody] MovieRequest rq)
+    {
+        if (rq is null || string.IsNullOrWhiteSpace(rq.Title)) return BadRequest();
+        var m = new Movie
+        {
+            ExternalUid = $"local:{Guid.NewGuid()}",
+            Title = rq.Title,
+            Description = rq.Description,
+            Year = rq.Year,
+            Director = rq.Director,
+            Producer = rq.Producer,
+            ReleaseDate = rq.ReleaseDate,
+            OpeningCrawl = rq.OpeningCrawl,
+            ExternalUrl = rq.ExternalUrl
+        };
+        _db.Movies.Add(m);
+        await _db.SaveChangesAsync();
+        return CreatedAtAction(nameof(GetById), new { id = m.Id }, m);
+    }
 
-	[HttpPut("{id:int}")]
-	[Authorize(Policy = "Admin")]
-	public async Task<IActionResult> Update(int id, MovieRequest rq)
-	{
-		var m = await _db.Movies.FindAsync(id);
-		if (m is null) return NotFound();
-		m.Title = rq.Title;
-		m.Description = rq.Description;
-		m.Year = rq.Year;
-		await _db.SaveChangesAsync();
-		return NoContent();
-	}
+    [HttpPut("{id:int}")]
+    [Authorize(Policy = "Admin")]
+    public async Task<IActionResult> Update(int id, [FromBody] MovieRequest rq)
+    {
+        if (rq is null || string.IsNullOrWhiteSpace(rq.Title)) return BadRequest();
+        var m = await _db.Movies.FindAsync(id);
+        if (m is null) return NotFound();
+        m.Title = rq.Title;
+        m.Description = rq.Description;
+        m.Year = rq.Year;
+        m.Director = rq.Director;
+        m.Producer = rq.Producer;
+        m.ReleaseDate = rq.ReleaseDate;
+        m.OpeningCrawl = rq.OpeningCrawl;
+        m.ExternalUrl = rq.ExternalUrl;
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
 
-	[HttpDelete("{id:int}")]
-	[Authorize(Policy = "Admin")]
-	public async Task<IActionResult> Delete(int id)
-	{
-		var m = await _db.Movies.FindAsync(id);
-		if (m is null) return NotFound();
-		_db.Movies.Remove(m);
-		await _db.SaveChangesAsync();
-		return NoContent();
-	}
+    [HttpDelete("{id:int}")]
+    [Authorize(Policy = "Admin")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var m = await _db.Movies.FindAsync(id);
+        if (m is null) return NotFound();
+        _db.Movies.Remove(m);
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
 }

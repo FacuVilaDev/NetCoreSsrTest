@@ -38,10 +38,11 @@ internal class Program
 
 		var jwt = builder.Configuration.GetSection("Jwt");
 		var key = Encoding.UTF8.GetBytes(jwt["Key"]!);
-
-		builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 			.AddJwtBearer(o =>
 			{
+				var jwt = builder.Configuration.GetSection("Jwt");
+				var key = Encoding.UTF8.GetBytes(jwt["Key"]!);
 				o.TokenValidationParameters = new TokenValidationParameters
 				{
 					ValidateIssuer = true,
@@ -52,9 +53,18 @@ internal class Program
 					IssuerSigningKey = new SymmetricSecurityKey(key),
 					ValidateLifetime = true
 				};
-			});
+                o.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = ctx =>
+                    {
+                        if (string.IsNullOrEmpty(ctx.Token) && ctx.Request.Cookies.TryGetValue("access_token", out var t))
+                            ctx.Token = t;
+                        return Task.CompletedTask;
+                    }
+                };
+            });
 
-		builder.Services.AddAuthorization(o =>
+        builder.Services.AddAuthorization(o =>
 		{
 			o.AddPolicy("Admin", p => p.RequireClaim(ClaimTypes.Role, "Admin"));
 			o.AddPolicy("Regular", p => p.RequireClaim(ClaimTypes.Role, "Regular"));
@@ -83,11 +93,25 @@ internal class Program
 			}
 		}
 
-		app.UseSwagger();
-		app.UseSwaggerUI();
-		app.UseAuthentication();
-		app.UseAuthorization();
-		app.MapControllers();
-		app.Run();
-	}
+        app.UseSwagger();
+        app.UseStaticFiles();
+        app.UseSwaggerUI(c =>
+        {
+            c.SwaggerEndpoint("/swagger/v1/swagger.json", "NetCoreSsrTest v1");
+            c.EnablePersistAuthorization();
+            c.UseRequestInterceptor(@"(req) => {
+				try {
+					var m = document.cookie.match(/(?:^|; )swagger_token=([^;]+)/);
+					var saved = window.localStorage.getItem('swaggerBearer');
+					var bearer = m ? decodeURIComponent(m[1]) : saved;
+					if (bearer && !req.headers['Authorization']) { req.headers['Authorization'] = bearer; }
+				} catch(e) {}
+				return req;
+			}");
+        });
+        app.UseAuthentication();
+        app.UseAuthorization();
+        app.MapControllers();
+        app.Run();
+    }
 }

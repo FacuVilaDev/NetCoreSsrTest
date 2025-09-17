@@ -46,10 +46,32 @@ public class AuthController : ControllerBase
 		var user = await _db.Users.SingleOrDefaultAsync(u => u.Email == rq.Email);
 		if (user is null) return Unauthorized();
 		if (!BCrypt.Net.BCrypt.Verify(rq.Password, user.PasswordHash)) return Unauthorized();
-		return new Infrastructure.AuthDtos.AuthResponse(GenerateToken(user));
-	}
 
-	private string GenerateToken(MovieUser user)
+        var token = GenerateToken(user);
+
+        Response.Cookies.Append("access_token", token, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Lax,
+            Path = "/",
+            Expires = DateTimeOffset.UtcNow.AddMinutes(int.Parse(_cfg.GetSection("Jwt")["ExpiresMinutes"] ?? "60"))
+        });
+        Response.Cookies.Append("swagger_token", "Bearer " + token, new CookieOptions
+        {
+            HttpOnly = false,
+            Secure = true,
+            SameSite = SameSiteMode.Lax,
+            Path = "/swagger",
+            Expires = DateTimeOffset.UtcNow.AddMinutes(int.Parse(_cfg.GetSection("Jwt")["ExpiresMinutes"] ?? "60"))
+        });
+
+        Response.Headers["X-Auth-Token"] = token;
+
+        return new Infrastructure.AuthDtos.AuthResponse(token);
+    }
+
+    private string GenerateToken(MovieUser user)
 	{
 		var jwt = _cfg.GetSection("Jwt");
 		var creds = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt["Key"]!)), SecurityAlgorithms.HmacSha256);
