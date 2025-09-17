@@ -1,10 +1,7 @@
-﻿using System.Data.Common;
-using BCrypt.Net;
-using Microsoft.AspNetCore.Hosting;
+using System.Data.Common;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using NetCoreSsrTest.Context;
 using NetCoreSsrTest.Domain;
 
@@ -33,8 +30,8 @@ public class TestWebAppFactory : WebApplicationFactory<Program>
 
             if (!db.Users.Any())
             {
-                db.Users.Add(new MovieUser { Email = "admin@local", PasswordHash = BCrypt.HashPassword("Admin123!"), Role = "Admin" });
-                db.Users.Add(new MovieUser { Email = "regular@local", PasswordHash = BCrypt.HashPassword("Regular123!"), Role = "Regular" });
+                db.Users.Add(new MovieUser { Email = "admin@local", PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!"), Role = "Admin" });
+                db.Users.Add(new MovieUser { Email = "regular@local", PasswordHash = BCrypt.Net.BCrypt.HashPassword("Regular123!"), Role = "Regular" });
                 db.SaveChanges();
             }
         });
