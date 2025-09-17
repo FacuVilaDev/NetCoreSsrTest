@@ -1,4 +1,5 @@
 ﻿using Docker.DotNet.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -26,7 +27,8 @@ public class AuthController : ControllerBase
 	}
 
 	[HttpPost("signup")]
-	public async Task<IActionResult> SignUp(SignUpRequest rq)
+    [AllowAnonymous]
+    public async Task<IActionResult> SignUp(SignUpRequest rq)
 	{
 		var exists = await _db.Users.AnyAsync(u => u.Email == rq.Email);
 		if (exists) return Conflict();
@@ -38,7 +40,8 @@ public class AuthController : ControllerBase
 	}
 
 	[HttpPost("login")]
-	public async Task<ActionResult<Infrastructure.AuthDtos.AuthResponse>> Login(Infrastructure.AuthDtos.LoginRequest rq)
+    [AllowAnonymous]
+    public async Task<ActionResult<Infrastructure.AuthDtos.AuthResponse>> Login(Infrastructure.AuthDtos.LoginRequest rq)
 	{
 		var user = await _db.Users.SingleOrDefaultAsync(u => u.Email == rq.Email);
 		if (user is null) return Unauthorized();

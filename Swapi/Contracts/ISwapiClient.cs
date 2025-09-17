@@ -4,6 +4,5 @@ namespace NetCoreSsrTest.Swapi.Contracts;
 
 public interface ISwapiClient
 {
-	Task<List<SwapiListItem>> GetFilmsAsync(CancellationToken ct);
-	Task<SwapiFilmDetail> GetFilmAsync(string uid, CancellationToken ct);
+    Task<List<SwapiFilmItem>> GetFilmsAsync(CancellationToken ct);
 }

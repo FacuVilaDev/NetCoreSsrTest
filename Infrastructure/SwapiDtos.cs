@@ -1,43 +1,34 @@
-﻿namespace NetCoreSsrTest.Infrastructure;
+﻿using System.Text.Json.Serialization;
+
+namespace NetCoreSsrTest.Infrastructure;
 
 public class SwapiDtos
 {
-	public class SwapiListResponse<T>
-	{
-		public string Message { get; set; } = default!;
-		public int? Total_records { get; set; }
-		public int? Total_pages { get; set; }
-		public string? Previous { get; set; }
-		public string? Next { get; set; }
-		public List<SwapiListItem>? Results { get; set; }
-	}
-	public class SwapiListItem
-	{
-		public string Uid { get; set; } = default!;
-		public string? Title { get; set; }
-		public string Url { get; set; } = default!;
-	}
-	public class SwapiFilmDetailResponse
-	{
-		public string Message { get; set; } = default!;
-		public SwapiFilmDetail Result { get; set; } = default!;
-	}
-	public class SwapiFilmDetail
-	{
-		public string Uid { get; set; } = default!;
-		public string? Description { get; set; }
-		public SwapiFilmProps Properties { get; set; } = default!;
-		public string? Url { get; set; }
-	}
-	public class SwapiFilmProps
-	{
-		public string Title { get; set; } = default!;
-		public int Episode_id { get; set; }
-		public string Opening_crawl { get; set; } = default!;
-		public string Director { get; set; } = default!;
-		public string Producer { get; set; } = default!;
-		public string Release_date { get; set; } = default!;
-		public string Url { get; set; } = default!;
-	}
+    public class SwapiFilmsResponse
+    {
+        [JsonPropertyName("message")] public string Message { get; set; } = default!;
+        [JsonPropertyName("result")] public List<SwapiFilmItem> Result { get; set; } = new();
+    }
 
+    public class SwapiFilmItem
+    {
+        [JsonPropertyName("uid")] public string Uid { get; set; } = default!;
+        [JsonPropertyName("description")] public string? Description { get; set; }
+        [JsonPropertyName("properties")] public SwapiFilmProps Properties { get; set; } = default!;
+    }
+
+    public class SwapiFilmProps
+    {
+        [JsonPropertyName("title")] public string Title { get; set; } = default!;
+        [JsonPropertyName("episode_id")] public int EpisodeId { get; set; }
+        [JsonPropertyName("opening_crawl")] public string OpeningCrawl { get; set; } = default!;
+        [JsonPropertyName("director")] public string Director { get; set; } = default!;
+        [JsonPropertyName("producer")] public string Producer { get; set; } = default!;
+        [JsonPropertyName("release_date")] public string ReleaseDate { get; set; } = default!;
+        [JsonPropertyName("url")] public string Url { get; set; } = default!;
+        [JsonPropertyName("characters")] public List<string> Characters { get; set; } = new();
+        [JsonPropertyName("species")] public List<string> Species { get; set; } = new();
+        [JsonPropertyName("vehicles")] public List<string> Vehicles { get; set; } = new();
+        [JsonPropertyName("starships")] public List<string> Starships { get; set; } = new();
+    }
 }

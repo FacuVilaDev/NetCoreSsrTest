@@ -61,13 +61,13 @@ internal class Program
 			o.AddPolicy("RegularOnly", p => p.RequireAssertion(c => c.User.HasClaim(ClaimTypes.Role, "Regular")));
 		});
 
-		builder.Services.AddHttpClient<ISwapiClient, SwapiClient>(c =>
-		{
-			c.BaseAddress = new Uri("https://www.swapi.tech/api/");
-			c.Timeout = TimeSpan.FromSeconds(20);
-		});
+        builder.Services.AddHttpClient<ISwapiClient, SwapiClient>(c =>
+        {
+            c.BaseAddress = new Uri("https://www.swapi.tech/api/");
+            c.Timeout = TimeSpan.FromSeconds(20);
+        });
 
-		builder.Services.AddScoped<ISwapiSyncService, SwapiSyncService>();
+        builder.Services.AddScoped<ISwapiSyncService, SwapiSyncService>();
 
 		var app = builder.Build();
 

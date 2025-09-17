@@ -12,4 +12,10 @@ public class Movie
 	public DateTime? ReleaseDate { get; set; }
 	public string? OpeningCrawl { get; set; }
 	public string? ExternalUrl { get; set; }
+
+    public ICollection<MoviePerson> People { get; set; } = new List<MoviePerson>();
+    public ICollection<MovieSpecies> Species { get; set; } = new List<MovieSpecies>();
+    public ICollection<MovieVehicle> Vehicles { get; set; } = new List<MovieVehicle>();
+    public ICollection<MovieStarship> Starships { get; set; } = new List<MovieStarship>();
+
 }

@@ -19,16 +19,35 @@ public class MoviesController : ControllerBase
 	public async Task<IEnumerable<Movie>> Get() =>
 		await _db.Movies.AsNoTracking().ToListAsync();
 
-	[HttpGet("{id:int}")]
-	[Authorize(Policy = "RegularOnly")]
-	public async Task<ActionResult<Movie>> GetById(int id)
-	{
-		var m = await _db.Movies.FindAsync(id);
-		if (m is null) return NotFound();
-		return m;
-	}
+    [HttpGet("{id:int}")]
+    [Authorize(Policy = "RegularOnly")]
+    public async Task<ActionResult<MovieDetailResponse>> GetById(int id)
+    {
+        var m = await _db.Movies
+            .Include(x => x.People).ThenInclude(y => y.Person)
+            .Include(x => x.Species).ThenInclude(y => y.Species)
+            .Include(x => x.Vehicles).ThenInclude(y => y.Vehicle)
+            .Include(x => x.Starships).ThenInclude(y => y.Starship)
+            .FirstOrDefaultAsync(x => x.Id == id);
 
-	[HttpPost]
+        if (m is null) return NotFound();
+
+        var dto = new MovieDetailResponse(
+            m.Id,
+            m.Title,
+            m.Description,
+            m.Director,
+            m.ReleaseDate,
+            m.People.Select(p => p.Person.ExternalUid),
+            m.Species.Select(s => s.Species.ExternalUid),
+            m.Vehicles.Select(v => v.Vehicle.ExternalUid),
+            m.Starships.Select(s => s.Starship.ExternalUid)
+        );
+        return dto;
+    }
+
+
+    [HttpPost]
 	[Authorize(Policy = "Admin")]
 	public async Task<ActionResult<Movie>> Create(MovieRequest rq)
 	{
