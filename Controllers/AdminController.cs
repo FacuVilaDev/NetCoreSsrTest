@@ -6,7 +6,7 @@ namespace NetCoreSsrTest.Controllers;
 
 [ApiController]
 [Route("admin")]
-//[Authorize(Policy = "Admin")]
+[Authorize(Policy = "Admin")]
 public class AdminController : ControllerBase
 {
 	private readonly ISwapiSyncService _sync;
