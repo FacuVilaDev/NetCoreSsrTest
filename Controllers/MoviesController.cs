@@ -16,13 +16,23 @@ public class MoviesController : ControllerBase
 
     public MoviesController(AppDbContext db) { _db = db; }
 
-    [HttpGet]
-    public async Task<IEnumerable<Movie>> Get() =>
+	/// <summary>Lista todas las películas.</summary>
+	/// <response code="200">Listado de películas.</response>
+	[HttpGet]
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	public async Task<IEnumerable<Movie>> Get() =>
         await _db.Movies.AsNoTracking().ToListAsync();
 
-    [HttpGet("{id:int}")]
-    [Authorize(Policy = "RegularOnly")]
-    public async Task<ActionResult<MovieDetailResponse>> GetById(int id)
+	/// <summary>Detalle de una película.</summary>
+	/// <remarks>Requiere rol <b>Regular</b> o superior.</remarks>
+	/// <param name="id">Id de la película.</param>
+	/// <response code="200">Detalle encontrado.</response>
+	/// <response code="404">No existe.</response>
+	[HttpGet("{id:int}")]
+	[Authorize(Policy = "RegularOnly")]
+	[ProducesResponseType(typeof(MovieDetailResponse), StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	public async Task<ActionResult<MovieDetailResponse>> GetById(int id)
     {
         var m = await _db.Movies
             .Include(x => x.People).ThenInclude(y => y.Person)
@@ -47,9 +57,17 @@ public class MoviesController : ControllerBase
         return dto;
     }
 
-    [HttpPost]
-    [Authorize(Policy = "Admin")]
-    public async Task<ActionResult<Movie>> Create([FromBody] MovieRequest rq)
+	/// <summary>Crea una película.</summary>
+	/// <remarks>Solo <b>Admin</b>.</remarks>
+	/// <response code="201">Creada.</response>
+	/// <response code="400">Datos inválidos.</response>
+	/// <response code="403">Sin permiso.</response>
+	[HttpPost]
+	[Authorize(Policy = "Admin")]
+	[ProducesResponseType(typeof(Movie), StatusCodes.Status201Created)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(StatusCodes.Status403Forbidden)]
+	public async Task<ActionResult<Movie>> Create([FromBody] MovieRequest rq)
     {
         if (rq is null || string.IsNullOrWhiteSpace(rq.Title)) return BadRequest();
         var m = new Movie

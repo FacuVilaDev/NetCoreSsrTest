@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using NetCoreSsrTest.Tests.Helpers;
 using System.Net;
 using System.Net.Http.Headers;
+using Xunit;
 
 namespace NetCoreSsrTest.Tests.Integration;
 

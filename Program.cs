@@ -32,8 +32,12 @@ public partial class Program
 			});
 			c.AddSecurityRequirement(new OpenApiSecurityRequirement
 			{
-		{ new OpenApiSecurityScheme { Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" } }, new string[]{} }
+				{ new OpenApiSecurityScheme { Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" } }, new string[]{} }
 			});
+			c.EnableAnnotations();
+			var xml = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+			var xmlPath = Path.Combine(AppContext.BaseDirectory, xml);
+			if (File.Exists(xmlPath)) c.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
 		});
 
 		var jwt = builder.Configuration.GetSection("Jwt");
@@ -97,7 +101,8 @@ public partial class Program
         app.UseStaticFiles();
         app.UseSwaggerUI(c =>
         {
-            c.SwaggerEndpoint("/swagger/v1/swagger.json", "NetCoreSsrTest v1");
+			c.InjectJavascript("/swagger/auth.js");
+			c.SwaggerEndpoint("/swagger/v1/swagger.json", "NetCoreSsrTest v1");
             c.EnablePersistAuthorization();
             c.UseRequestInterceptor(@"(req) => {
 				try {

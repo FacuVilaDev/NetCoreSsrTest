@@ -6,6 +6,7 @@ using NetCoreSsrTest.Context;
 using NetCoreSsrTest.Infrastructure;
 using NetCoreSsrTest.Swapi.Contracts;
 using NetCoreSsrTest.Swapi.Service;
+using Xunit;
 using static NetCoreSsrTest.Infrastructure.SwapiDtos;
 
 namespace Tests.Unit;
